@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lit & More — Document Hub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #F4F6F9;
+    color: #1A1A1A;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ── */
+  .hub-header {
+    background: #1F4E79;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hub-header h1 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .hub-header p {
+    color: #B5D4F4;
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .hub-badge {
+    background: #2E75B6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── LAYOUT ── */
+  .hub-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #555;
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1F4E79;
+  }
+
+  /* ── DECISION TOOL ── */
+  .decision-wrap {
+    background: #fff;
+    border: 1px solid #D0D7E2;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .decision-hdr {
+    background: #EBF3FA;
+    padding: 14px 20px;
+    border-bottom: 1px solid #D0D7E2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .decision-hdr span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1F4E79;
+  }
+  .decision-hdr p {
+    font-size: 12px;
+    color: #555;
+    margin-top: 1px;
+  }
+  .decision-inner {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 340px;
+  }
+  .sit-col {
+    border-right: 1px solid #E0E6EF;
+    padding: 16px;
+    background: #FAFBFC;
+  }
+  .sit-cat {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #888;
+    margin: 12px 0 6px;
+  }
+  .sit-cat:first-child { margin-top: 0; }
+  .sit-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid #E0E6EF;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: #1A1A1A;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: all 0.12s;
+  }
+  .sit-btn:hover { background: #EBF3FA; border-color: #2E75B6; color: #1F4E79; }
+  .sit-btn.active { background: #1F4E79; border-color: #1F4E79; color: #fff; font-weight: 600; }
+
+  .result-col { padding: 20px 24px; }
+  .result-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #AAB4C0;
+    font-size: 13px;
+    text-align: center;
+    padding: 40px;
+  }
+  .result-title { font-size: 15px; font-weight: 700; color: #1F4E79; margin-bottom: 14px; }
+  .result-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #888;
+    margin: 14px 0 6px;
+  }
+  .result-group-label:first-child { margin-top: 0; }
+  .doc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.12s;
+  }
+  .chip:hover { opacity: 0.82; }
+  .chip.required { background: #EBF3FA; border: 1px solid #2E75B6; color: #1F4E79; }
+  .chip.conditional { background: #FFF8E1; border: 1px solid #F59E0B; color: #7F4E00; }
+  .chip.optional { background: #F4F6F9; border: 1px solid #C8D0DC; color: #444; }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .chip.required .chip-dot { background: #2E75B6; }
+  .chip.conditional .chip-dot { background: #F59E0B; }
+  .chip.optional .chip-dot { background: #AAB4C0; }
+  .result-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #666;
+    background: #F4F6F9;
+    border-left: 3px solid #2E75B6;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.6;
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    color: #666;
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+
+  /* ── DOCUMENT LIBRARY GRID ── */
+  .lib-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 800px) { .lib-grid { grid-template-columns: 1fr; } }
+
+  .lib-col-hdr {
+    border-radius: 8px 8px 0 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 0;
+  }
+  .lib-col-hdr.purple { background: #3C3489; color: #fff; }
+  .lib-col-hdr.teal   { background: #0E5B6E; color: #fff; }
+  .lib-col-hdr.amber  { background: #633806; color: #fff; }
+  .lib-col-hdr p { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+  .lib-col-body {
+    background: #fff;
+    border: 1px solid #D0D7E2;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+
+  .lib-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #888;
+    padding: 10px 14px 4px;
+    background: #FAFBFC;
+    border-top: 1px solid #E8ECF2;
+  }
+  .lib-section-label:first-child { border-top: none; }
+
+  .doc-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-top: 1px solid #F0F3F7;
+    text-decoration: none;
+    color: #1A1A1A;
+    font-size: 12px;
+    transition: background 0.1s;
+    gap: 8px;
+  }
+  .doc-link:hover { background: #EBF3FA; }
+  .doc-link:first-of-type { border-top: none; }
+  .doc-name { flex: 1; font-weight: 500; }
+  .doc-id { font-size: 10px; color: #999; white-space: nowrap; }
+  .doc-arrow {
+    font-size: 11px;
+    color: #2E75B6;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .doc-link:hover .doc-arrow { opacity: 1; }
+  .doc-link.internal { color: #888; }
+  .doc-link.internal .doc-name { font-weight: 400; }
+
+  /* ── FOOTER ── */
+  .hub-footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: #AAB4C0;
+    border-top: 1px solid #E0E6EF;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hub-header">
+  <div>
+    <h1>Lit & More — Document Hub</h1>
+    <p>Internal reference · Every document, every situation, one place</p>
+  </div>
+  <span class="hub-badge">INTERNAL USE ONLY</span>
+</div>
+
+<div class="hub-body">
+
+  <!-- DECISION TOOL -->
+  <div class="section-title">Step 1 — Find the right documents for your situation</div>
+
+  <div class="decision-wrap">
+    <div class="decision-hdr">
+      <div>
+        <span>What are you working on?</span>
+        <p>Select your situation — the documents you need will appear on the right with direct links</p>
+      </div>
+    </div>
+    <div class="decision-inner">
+
+      <div class="sit-col">
+        <div class="sit-cat">Starting a relationship</div>
+        <button class="sit-btn" onclick="show(this,'new-client')">New client, first engagement</button>
+        <button class="sit-btn" onclick="show(this,'hipaa')">New client — handles health data</button>
+        <button class="sit-btn" onclick="show(this,'gdpr')">New client — EU / CCPA data</button>
+        <button class="sit-btn" onclick="show(this,'explore')">Exploring only — no work yet</button>
+
+        <div class="sit-cat">Starting a project</div>
+        <button class="sit-btn" onclick="show(this,'new-project')">New matter / project kick-off</button>
+        <button class="sit-btn" onclick="show(this,'forensics')">New project — forensic collection</button>
+        <button class="sit-btn" onclick="show(this,'device')">Device or media just arrived</button>
+        <button class="sit-btn" onclick="show(this,'rush')">Client needs it now — rush</button>
+
+        <div class="sit-cat">During a project</div>
+        <button class="sit-btn" onclick="show(this,'change')">Scope or specs changed</button>
+        <button class="sit-btn" onclick="show(this,'delivery')">About to deliver to client</button>
+        <button class="sit-btn" onclick="show(this,'incident')">Something went wrong</button>
+
+        <div class="sit-cat">Closing out</div>
+        <button class="sit-btn" onclick="show(this,'return')">Returning devices or media</button>
+        <button class="sit-btn" onclick="show(this,'destroy')">Client wants items destroyed</button>
+        <button class="sit-btn" onclick="show(this,'store')">Client wants to keep data longer</button>
+        <button class="sit-btn" onclick="show(this,'offboard')">Ending the engagement</button>
+
+        <div class="sit-cat">Existing clients</div>
+        <button class="sit-btn" onclick="show(this,'add-service')">Adding a new service</button>
+      </div>
+
+      <div class="result-col" id="result-col">
+        <div class="result-empty">← Select a situation on the left</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DOCUMENT LIBRARY -->
+  <div class="section-title">Step 2 — Open the document directly</div>
+  <p style="font-size:12px;color:#666;margin-bottom:16px">Click any document below to open it. Signed agreements open in PandaDoc. Smart forms open as fillable web forms. Checklists open in ClickUp.</p>
+
+  <div class="lib-grid">
+
+    <!-- COL 1: SIGNED AGREEMENTS -->
+    <div>
+      <div class="lib-col-hdr purple">Signed agreements <p>Open in PandaDoc — send, e-sign, auto-files to HubSpot</p></div>
+      <div class="lib-col-body">
+        <div class="lib-section-label">Master — sign once per relationship</div>
+        <a href="https://app.pandadoc.com/a/#/templates/DnJm52jKkTgu4CBfi7Dgg7" class="doc-link" target="_blank"><span class="doc-name">Master Services Agreement</span><span class="doc-id">LIT-M-MSA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/LpR6uBhdPQsidW4GNPGHtd" class="doc-link" target="_blank"><span class="doc-name">Mutual NDA</span><span class="doc-id">LIT-M-NDA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/XSHN6xCQt6SLwctHNMwCEL" class="doc-link" target="_blank"><span class="doc-name">BAA (HIPAA)</span><span class="doc-id">LIT-M-BAA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/XSHN6xCQt6SLwctHNMwCEL" class="doc-link" target="_blank"><span class="doc-name">DPA (GDPR / CCPA)</span><span class="doc-id">LIT-M-DPA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/TxGX9euiBs6yGykEjYrMD7" class="doc-link" target="_blank"><span class="doc-name">Consolidated Services Agreement</span><span class="doc-id">LIT-S-CSA-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label">Per project</div>
+        <a href="PANDADOC_SOW_LINK" class="doc-link" target="_blank"><span class="doc-name">Statement of Work</span><span class="doc-id">LIT-P-SOW-001</span><span class="doc-arrow">↗</span></a>
+        <a href="PANDADOC_COR_LINK" class="doc-link" target="_blank"><span class="doc-name">Change Order</span><span class="doc-id">LIT-P-COR-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/TRnRZJC9pZR4SAWE8kXJNN" class="doc-link" target="_blank"><span class="doc-name">Fee Schedule (Exhibit A)</span><span class="doc-id">LIT-P-FEE-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label">Operational — sign at point of service</div>
+        <a href="https://app.pandadoc.com/a/#/templates/TRnRZJC9pZR4SAWE8kXJNN" class="doc-link" target="_blank"><span class="doc-name">Rush & Rate Acknowledgment</span><span class="doc-id">LIT-P-FAK-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/TebMe4FqfRGVs4N6hAgS6g" class="doc-link" target="_blank"><span class="doc-name">Asset Return Acknowledgment</span><span class="doc-id">LIT-O-ARA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/59PabHNNrrk8WNo7DdTTRh" class="doc-link" target="_blank"><span class="doc-name">Evidence Destruction Auth.</span><span class="doc-id">LIT-O-EDA-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/WFQBVPpVfSDnDQCobycBEW" class="doc-link" target="_blank"><span class="doc-name">Storage Extension Auth.</span><span class="doc-id">LIT-O-STO-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/ZCJfa9GnwhQPJ3nUfqNXpN" class="doc-link" target="_blank"><span class="doc-name">Client Offboarding Form</span><span class="doc-id">LIT-O-CAN-001</span><span class="doc-arrow">↗</span></a>
+        <a href="https://app.pandadoc.com/a/#/templates/xgzzQGsAiRotm4SPwsNi3n" class="doc-link internal" target="_blank"><span class="doc-name">Incident Response Log</span><span class="doc-id">LIT-O-INC-001</span><span class="doc-arrow">↗</span></a>
+      </div>
+    </div>
+
+    <!-- COL 2: SMART FORMS -->
+    <div>
+      <div class="lib-col-hdr teal">Smart forms <p>Fill out online — submits directly to HubSpot deal record</p></div>
+      <div class="lib-col-body">
+        <div class="lib-section-label">Client-facing</div>
+        <a href="HUBSPOT_ONBOARDING_FORM_LINK" class="doc-link" target="_blank"><span class="doc-name">Client Onboarding Intake</span><span class="doc-id">LIT-P-ONB-001</span><span class="doc-arrow">↗</span></a>
+        <a href="HUBSPOT_HOSTING_FORM_LINK" class="doc-link" target="_blank"><span class="doc-name">Hosting Order Form</span><span class="doc-id">LIT-S-HOS-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label">Staff-facing — fill when work starts</div>
+        <a href="HUBSPOT_INTAKE_FORM_LINK" class="doc-link" target="_blank"><span class="doc-name">Project Intake Sheet</span><span class="doc-id">LIT-P-PIS-001</span><span class="doc-arrow">↗</span></a>
+        <a href="HUBSPOT_MIF_FORM_LINK" class="doc-link" target="_blank"><span class="doc-name">Media Intake Form</span><span class="doc-id">LIT-O-MIF-001</span><span class="doc-arrow">↗</span></a>
+        <a href="HUBSPOT_COC_FORM_LINK" class="doc-link" target="_blank"><span class="doc-name">Chain of Custody — Transfer Entry</span><span class="doc-id">LIT-O-COC-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label" style="margin-top:20px">How forms work</div>
+        <div style="padding:12px 14px;font-size:11px;color:#555;line-height:1.7;">
+          Click any form link above. Fill it out on your computer or phone. Hit Submit. The data automatically appears in the HubSpot deal record for that matter. No email, no attachment, no manual filing.
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 3: CHECKLISTS -->
+    <div>
+      <div class="lib-col-hdr amber">Checklists <p>Internal only — open in ClickUp, check off in real time</p></div>
+      <div class="lib-col-body">
+        <div class="lib-section-label">Open these when a new deal is created</div>
+        <a href="CLICKUP_ONBOARDING_TEMPLATE_LINK" class="doc-link" target="_blank"><span class="doc-name">Client Onboarding Checklist</span><span class="doc-id">LIT-P-ONB-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label">Open before releasing any deliverable</div>
+        <a href="CLICKUP_QC_TEMPLATE_LINK" class="doc-link" target="_blank"><span class="doc-name">QC Pre-Delivery Checklist</span><span class="doc-id">LIT-O-QCC-001</span><span class="doc-arrow">↗</span></a>
+
+        <div class="lib-section-label" style="margin-top:20px">How checklists work</div>
+        <div style="padding:12px 14px;font-size:11px;color:#555;line-height:1.7;">
+          When a new Deal is created in HubSpot, the Onboarding checklist opens automatically in ClickUp. When a deal moves to Pre-Delivery, the QC checklist opens. Check off each item as you complete it. Both are required — nothing ships without a completed QC checklist.
+        </div>
+
+        <div class="lib-section-label" style="margin-top:4px">Reminder</div>
+        <div style="padding:12px 14px;font-size:11px;color:#7F4E00;background:#FFF8E1;line-height:1.7;">
+          Per MSA §4.6 — nothing is released to a client until all outstanding amounts are paid. Confirm payment cleared before the QC sign-off.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lib-grid -->
+
+  <!-- QUICK LOOKUP TABLE -->
+  <div class="section-title" style="margin-top:40px">Quick lookup — if you already know what you need</div>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #D0D7E2;border-radius:8px;overflow:hidden;font-size:12px;">
+    <thead>
+      <tr style="background:#1F4E79;color:#fff;">
+        <th style="padding:10px 14px;text-align:left;font-weight:600;">If you need to...</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:600;">Go to...</th>
+        <th style="padding:10px 14px;text-align:left;font-weight:600;">Open...</th>
+      </tr>
+    </thead>
+    <tbody id="quick-table">
+      <!-- rows injected by JS -->
+    </tbody>
+  </table>
+
+</div><!-- end hub-body -->
+
+<div class="hub-footer">
+  Lit & More, Inc. · Internal Document Hub · Last updated March 2026 · All documents governed by LIT-M-MSA-001
+</div>
+
+<script>
+// ── DECISION DATA ──────────────────────────────────────────
+const situations = {
+  'new-client': {
+    title: 'New client, first engagement',
+    groups: [
+      { label: 'Sign first — before any work starts', items: [
+        { name: 'MSA', id: 'LIT-M-MSA-001', level: 'required', link: 'PANDADOC_MSA_LINK' },
+        { name: 'Consolidated Services Agreement', id: 'LIT-S-CSA-001', level: 'required', note: 'Check applicable modules', link: 'PANDADOC_CSA_LINK' },
+      ]},
+      { label: 'Then set up the project', items: [
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', link: 'PANDADOC_SOW_LINK' },
+        { name: 'Project Intake Sheet', id: 'LIT-P-PIS-001', level: 'required', link: 'HUBSPOT_INTAKE_FORM_LINK' },
+        { name: 'Client Onboarding Intake', id: 'LIT-P-ONB-001', level: 'required', link: 'HUBSPOT_ONBOARDING_FORM_LINK' },
+        { name: 'Fee Schedule', id: 'LIT-P-FEE-001', level: 'conditional', note: 'If rates not in SOW', link: 'PANDADOC_FEE_LINK' },
+      ]},
+    ],
+    note: 'NDA optional — use if client requests it or if exploring before MSA is signed.'
+  },
+  'hipaa': {
+    title: 'New client — handles health / PHI data',
+    groups: [
+      { label: 'Required before any PHI is shared', items: [
+        { name: 'MSA', id: 'LIT-M-MSA-001', level: 'required', link: 'PANDADOC_MSA_LINK' },
+        { name: 'BAA (HIPAA)', id: 'LIT-M-BAA-001', level: 'required', note: 'Must be signed before client sends any PHI', link: 'PANDADOC_BAA_LINK' },
+        { name: 'Consolidated Services Agreement', id: 'LIT-S-CSA-001', level: 'required', link: 'PANDADOC_CSA_LINK' },
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', link: 'PANDADOC_SOW_LINK' },
+      ]},
+    ],
+    note: 'Do not accept any files from this client until the BAA is signed. Tell them explicitly.'
+  },
+  'gdpr': {
+    title: 'New client — EU / CCPA personal data',
+    groups: [
+      { label: 'Required before personal data is shared', items: [
+        { name: 'MSA', id: 'LIT-M-MSA-001', level: 'required', link: 'PANDADOC_MSA_LINK' },
+        { name: 'DPA (GDPR / CCPA)', id: 'LIT-M-DPA-001', level: 'required', note: 'Must be signed before any regulated data is shared', link: 'PANDADOC_DPA_LINK' },
+        { name: 'Consolidated Services Agreement', id: 'LIT-S-CSA-001', level: 'required', link: 'PANDADOC_CSA_LINK' },
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', link: 'PANDADOC_SOW_LINK' },
+      ]},
+    ],
+    note: 'If the client has both HIPAA and GDPR exposure, execute both the BAA and DPA.'
+  },
+  'explore': {
+    title: 'Exploring — no work yet',
+    groups: [
+      { label: 'Pre-engagement only', items: [
+        { name: 'NDA', id: 'LIT-M-NDA-001', level: 'required', note: 'Protects both sides during pricing discussions', link: 'PANDADOC_NDA_LINK' },
+      ]},
+      { label: 'Once work is confirmed, add', items: [
+        { name: 'MSA', id: 'LIT-M-MSA-001', level: 'conditional', link: 'PANDADOC_MSA_LINK' },
+        { name: 'Consolidated Services Agreement', id: 'LIT-S-CSA-001', level: 'conditional', link: 'PANDADOC_CSA_LINK' },
+      ]},
+    ],
+    note: 'Do not execute the MSA until the engagement is confirmed — it creates obligations on both sides.'
+  },
+  'new-project': {
+    title: 'New matter / project kick-off',
+    groups: [
+      { label: 'Assumes MSA + CSA already signed', items: [
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', link: 'PANDADOC_SOW_LINK' },
+        { name: 'Project Intake Sheet', id: 'LIT-P-PIS-001', level: 'required', note: 'Fill before work begins', link: 'HUBSPOT_INTAKE_FORM_LINK' },
+        { name: 'Onboarding Checklist', id: 'LIT-P-ONB-001', level: 'required', note: 'Open in ClickUp now', link: 'CLICKUP_ONBOARDING_TEMPLATE_LINK' },
+      ]},
+      { label: 'If hosting is involved', items: [
+        { name: 'Hosting Order Form', id: 'LIT-S-HOS-001', level: 'conditional', link: 'HUBSPOT_HOSTING_FORM_LINK' },
+      ]},
+    ],
+    note: 'If MSA or CSA are not yet signed, stop and execute those first. A SOW alone is not sufficient.'
+  },
+  'forensics': {
+    title: 'New project — forensic collection',
+    groups: [
+      { label: 'Before collection begins', items: [
+        { name: 'MSA', id: 'LIT-M-MSA-001', level: 'required', link: 'PANDADOC_MSA_LINK' },
+        { name: 'CSA — Module D checked', id: 'LIT-S-CSA-001', level: 'required', note: 'Forensic module must be activated', link: 'PANDADOC_CSA_LINK' },
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', note: 'Must define custodians and device list', link: 'PANDADOC_SOW_LINK' },
+      ]},
+      { label: 'At time of device receipt', items: [
+        { name: 'Media Intake Form', id: 'LIT-O-MIF-001', level: 'required', note: 'Complete immediately — hash at intake', link: 'HUBSPOT_MIF_FORM_LINK' },
+        { name: 'COC Transfer Entry', id: 'LIT-O-COC-001', level: 'required', note: 'Entry 1 = receipt', link: 'HUBSPOT_COC_FORM_LINK' },
+      ]},
+    ],
+    note: 'Never accept a device without opening a Media Intake Form and COC entry simultaneously.'
+  },
+  'device': {
+    title: 'Device or media just arrived',
+    groups: [
+      { label: 'Complete before courier leaves if possible', items: [
+        { name: 'Media Intake Form', id: 'LIT-O-MIF-001', level: 'required', note: 'Photograph everything, capture hash at intake', link: 'HUBSPOT_MIF_FORM_LINK' },
+        { name: 'COC Transfer Entry', id: 'LIT-O-COC-001', level: 'required', note: 'Entry 1 = receipt from courier', link: 'HUBSPOT_COC_FORM_LINK' },
+      ]},
+      { label: 'If seal is broken or condition is wrong', items: [
+        { name: 'Incident Response Log', id: 'LIT-O-INC-001', level: 'conditional', note: 'Document before doing anything else', link: 'PANDADOC_INC_LINK' },
+      ]},
+    ],
+    note: 'Do not connect any device to a network before the Media Intake Form is complete.'
+  },
+  'rush': {
+    title: 'Client needs it now — rush',
+    groups: [
+      { label: 'Capture the approval before starting', items: [
+        { name: 'Rush & Rate Acknowledgment', id: 'LIT-P-FAK-001', level: 'required', note: 'Get signature or email confirmation first', link: 'PANDADOC_FAK_LINK' },
+      ]},
+      { label: 'Follow up within 5 business days', items: [
+        { name: 'Change Order', id: 'LIT-P-COR-001', level: 'conditional', note: 'If scope changed from existing SOW', link: 'PANDADOC_COR_LINK' },
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'conditional', note: 'If no SOW exists yet', link: 'PANDADOC_SOW_LINK' },
+      ]},
+    ],
+    note: 'The rush ack. buys time — it is not a substitute for an SOW. The formal document must follow within 5 business days.'
+  },
+  'change': {
+    title: 'Scope, specs, or timeline changed',
+    groups: [
+      { label: 'Always required for changes', items: [
+        { name: 'Change Order', id: 'LIT-P-COR-001', level: 'required', note: 'One per change event', link: 'PANDADOC_COR_LINK' },
+      ]},
+      { label: 'If the change was already verbally approved', items: [
+        { name: 'Rush & Rate Acknowledgment', id: 'LIT-P-FAK-001', level: 'conditional', note: 'Use to capture verbal approval, then formalize with COR', link: 'PANDADOC_FAK_LINK' },
+      ]},
+    ],
+    note: 'Never start changed work on a verbal alone. Get at minimum a written email from the Authorized Rep.'
+  },
+  'delivery': {
+    title: 'About to deliver to client',
+    groups: [
+      { label: 'Internal — complete before release', items: [
+        { name: 'QC Checklist', id: 'LIT-O-QCC-001', level: 'required', note: 'All applicable sections must be checked', link: 'CLICKUP_QC_TEMPLATE_LINK' },
+      ]},
+      { label: 'If physical items are being returned', items: [
+        { name: 'Asset Return Acknowledgment', id: 'LIT-O-ARA-001', level: 'conditional', link: 'PANDADOC_ARA_LINK' },
+        { name: 'COC Transfer Entry — final entry', id: 'LIT-O-COC-001', level: 'conditional', link: 'HUBSPOT_COC_FORM_LINK' },
+      ]},
+    ],
+    note: 'Per MSA §4.6 — confirm all outstanding amounts are paid before QC sign-off and release.'
+  },
+  'incident': {
+    title: 'Something went wrong',
+    groups: [
+      { label: 'Open immediately', items: [
+        { name: 'Incident Response Log', id: 'LIT-O-INC-001', level: 'required', note: 'Escalate to supervisor first, then document', link: 'PANDADOC_INC_LINK' },
+      ]},
+      { label: 'If PHI or personal data may be involved', items: [
+        { name: 'BAA — 24-hour notification clock', id: 'LIT-M-BAA-001', level: 'required', note: 'Clock starts at confirmation, not discovery', link: 'PANDADOC_BAA_LINK' },
+        { name: 'DPA — 24-hour notification clock', id: 'LIT-M-DPA-001', level: 'conditional', note: 'GDPR/CCPA clients', link: 'PANDADOC_DPA_LINK' },
+      ]},
+    ],
+    note: 'Escalate to supervisor and Account Manager before finishing the log — not after.'
+  },
+  'return': {
+    title: 'Returning devices or media',
+    groups: [
+      { label: 'Required at time of return', items: [
+        { name: 'Asset Return Acknowledgment', id: 'LIT-O-ARA-001', level: 'required', note: 'Both parties sign — condition at return vs. intake', link: 'PANDADOC_ARA_LINK' },
+        { name: 'COC Transfer Entry — final', id: 'LIT-O-COC-001', level: 'required', note: 'Closes the custody log', link: 'HUBSPOT_COC_FORM_LINK' },
+      ]},
+    ],
+    note: 'Compare condition at return against the original Media Intake Form before client signs.'
+  },
+  'destroy': {
+    title: 'Client wants items destroyed',
+    groups: [
+      { label: 'Required before destruction proceeds', items: [
+        { name: 'Evidence Destruction Authorization', id: 'LIT-O-EDA-001', level: 'required', note: 'Client must confirm legal hold is cleared', link: 'PANDADOC_EDA_LINK' },
+      ]},
+      { label: 'After destruction', items: [
+        { name: 'COC Transfer Entry — final', id: 'LIT-O-COC-001', level: 'required', note: 'Record disposition as Destroyed', link: 'HUBSPOT_COC_FORM_LINK' },
+      ]},
+    ],
+    note: 'Never destroy without a signed authorization. Destruction is permanent and irreversible.'
+  },
+  'store': {
+    title: 'Client wants to keep data longer than 30 days',
+    groups: [
+      { label: 'Required before 30-day window expires', items: [
+        { name: 'Storage Extension Authorization', id: 'LIT-O-STO-001', level: 'required', note: 'Covers hosted data, physical evidence, and work product', link: 'PANDADOC_STO_LINK' },
+      ]},
+    ],
+    note: 'Per MSA §6.5, Lit & More may delete data after 30 days without notice. Get this signed before the window closes.'
+  },
+  'offboard': {
+    title: 'Ending the engagement',
+    groups: [
+      { label: 'Required to close the matter', items: [
+        { name: 'Client Offboarding Form', id: 'LIT-O-CAN-001', level: 'required', note: 'Triggers data disposition and final billing', link: 'PANDADOC_CAN_LINK' },
+      ]},
+      { label: 'Depending on disposition election', items: [
+        { name: 'Asset Return Acknowledgment', id: 'LIT-O-ARA-001', level: 'conditional', note: 'If physical items returned', link: 'PANDADOC_ARA_LINK' },
+        { name: 'Evidence Destruction Authorization', id: 'LIT-O-EDA-001', level: 'conditional', note: 'If items being destroyed', link: 'PANDADOC_EDA_LINK' },
+        { name: 'Storage Extension Authorization', id: 'LIT-O-STO-001', level: 'conditional', note: 'If data held beyond 30 days', link: 'PANDADOC_STO_LINK' },
+      ]},
+    ],
+    note: 'Outstanding balance must be confirmed cleared before any data export or physical return.'
+  },
+  'add-service': {
+    title: 'Existing client — adding a new service',
+    groups: [
+      { label: 'Check if the CSA module is already activated', items: [
+        { name: 'Change Order', id: 'LIT-P-COR-001', level: 'required', note: 'Activates the new module on existing CSA', link: 'PANDADOC_COR_LINK' },
+        { name: 'Statement of Work', id: 'LIT-P-SOW-001', level: 'required', note: 'New SOW for the new service line', link: 'PANDADOC_SOW_LINK' },
+      ]},
+      { label: 'If the new service involves regulated data', items: [
+        { name: 'BAA (HIPAA)', id: 'LIT-M-BAA-001', level: 'conditional', note: 'If PHI now involved and BAA not yet signed', link: 'PANDADOC_BAA_LINK' },
+        { name: 'DPA (GDPR / CCPA)', id: 'LIT-M-DPA-001', level: 'conditional', note: 'If regulated data now involved', link: 'PANDADOC_DPA_LINK' },
+      ]},
+    ],
+    note: 'If the CSA already has the module checked, only a new SOW is needed.'
+  },
+};
+
+// ── RENDER DECISION RESULT ─────────────────────────────────
+function show(btn, key) {
+  document.querySelectorAll('.sit-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const d = situations[key];
+  if (!d) return;
+
+  let html = `<div class="legend">
+    <span><span style="width:8px;height:8px;border-radius:50%;background:#2E75B6;border:1px solid #2E75B6;display:inline-block"></span>Required</span>
+    <span><span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;border:1px solid #F59E0B;display:inline-block"></span>Conditional</span>
+    <span><span style="width:8px;height:8px;border-radius:50%;background:#C8D0DC;border:1px solid #C8D0DC;display:inline-block"></span>Optional</span>
+  </div>`;
+  html += `<div class="result-title">${d.title}</div>`;
+
+  d.groups.forEach(g => {
+    html += `<div class="result-group-label">${g.label}</div><div class="doc-chips">`;
+    g.items.forEach(item => {
+      const cls = item.level;
+      const tip = item.note ? ` title="${item.note}"` : '';
+      html += `<a href="${item.link}" target="_blank" class="chip ${cls}"${tip}><span class="chip-dot"></span>${item.name} <span style="font-size:10px;opacity:0.7">${item.id}</span></a>`;
+    });
+    html += `</div>`;
+  });
+
+  if (d.note) html += `<div class="result-note">${d.note}</div>`;
+  document.getElementById('result-col').innerHTML = html;
+}
+
+// ── QUICK LOOKUP TABLE ─────────────────────────────────────
+const quickRows = [
+  ['Send an MSA, NDA, BAA, DPA, or CSA', 'HubSpot → Contact record', 'PandaDoc panel → Create Document'],
+  ['Send a SOW or Change Order', 'HubSpot → Deal record', 'PandaDoc panel → Create Document'],
+  ['Get a rush approval in writing', 'HubSpot → Deal record', 'PandaDoc → Rush & Rate Ack'],
+  ['Log a device arriving at intake', 'Phone or any browser', 'Media Intake Form (bookmark it)'],
+  ['Record a custody transfer', 'Phone or any browser', 'COC Transfer Entry Form'],
+  ['Kick off a new project', 'Phone or any browser', 'Project Intake Sheet Form'],
+  ['Set up a hosting workspace', 'Email link to client', 'Hosting Order Form'],
+  ['Start onboarding a new client', 'ClickUp', 'Onboarding Checklist template'],
+  ['QC a deliverable before release', 'ClickUp', 'QC Checklist template'],
+  ['Return devices or media', 'HubSpot → Deal record', 'PandaDoc → Asset Return Ack'],
+  ['Authorize destruction', 'HubSpot → Deal record', 'PandaDoc → Destruction Auth'],
+  ['Document a security incident', 'HubSpot → Deal record', 'PandaDoc → Incident Log'],
+  ['Close out an engagement', 'HubSpot → Deal record', 'PandaDoc → Offboarding Form'],
+];
+
+const tbody = document.getElementById('quick-table');
+quickRows.forEach(([action, where, use], i) => {
+  const bg = i % 2 === 0 ? '#FAFBFC' : '#fff';
+  tbody.innerHTML += `<tr style="background:${bg}">
+    <td style="padding:8px 14px;border-top:1px solid #EEF0F4;font-weight:500">${action}</td>
+    <td style="padding:8px 14px;border-top:1px solid #EEF0F4;color:#555">${where}</td>
+    <td style="padding:8px 14px;border-top:1px solid #EEF0F4;color:#2E75B6">${use}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
